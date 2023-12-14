@@ -6,3 +6,6 @@ It works by generating all possible ID candidates for a given DoB and Gender com
 More info on ID numbers and how they work: https://et.wikipedia.org/wiki/Isikukood
 
 **NB: I could not get the ldap Python library to work on Windows, but it works on Linux. If you want it to support Windows, you might have to find an alternative ldap library.**
+
+# Example use:
+![image](https://github.com/karl-k-m/idBruteforcer/assets/74490726/c481b43b-08e8-41d7-b570-7fba01e7e4e7)
