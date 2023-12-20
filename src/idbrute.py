@@ -140,14 +140,14 @@ def main():
         if search != "":
             matches = list()
             for i in births:
-                if search.lower() in str(i.lower()):
+                if search.lower() in str(i.decode("utf8").lower()):
                     matches.append(i)
             if len(matches) == 0:
-                rprint("[Bold]Person matching search term not found[/Bold].")
+                rprint("[bold]Person matching search term not found[/bold].")
             if len(matches) != 0:
-                rprint("[Bold]Match(es) found:[/Bold]")
+                rprint("[bold]Match(es) found:[/bold]")
                 for match in matches:
-                    print(match)
+                    rprint(f'[bold]{match.decode("utf8").replace(",", ", ")}[/bold]')
         return
     except KeyboardInterrupt:
         print('')
