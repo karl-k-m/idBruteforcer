@@ -10,6 +10,18 @@ More info on ID numbers and how they work: https://et.wikipedia.org/wiki/Isikuko
 
 External dependencies: **python-ldap**, **rich**.
 
+### Usage:
+python3 idBruteforcer.py [OPTIONS]
+
+Options:  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**--verbose / -v**: After search, print all ID's which didn't return a cert.  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**--help / -h**: Show help message.
+
+### Key Points:
+* The program (theoretically) does 10 requests per second. If you want to change this, change the sleep time in the spam_api function. I have no clue what the API's rate limit is, or if there even is a rate limit, so I just went with 10 requests per second. Increase it at your own risk.
+* The search (searching for names) is not case-sensitive.
+* If you search for a name (or part of a name), it will return all results which match that name. However, this filtering is done **after** the search, so it will still make requests for all possible ID's.
+
 **NB: I could not get the ldap Python library to work on Windows, but it works on Linux. If you want it to support Windows, you might have to find an alternative ldap library.**
 
 # Example use:
