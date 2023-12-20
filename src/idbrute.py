@@ -2,6 +2,7 @@ import ldap
 import time
 from rich import print as rprint
 from rich.prompt import Prompt
+import sys
 
 def calculate_control_number(id_number: str) -> int:
     """
@@ -69,7 +70,7 @@ def generate_ids(gender, dob):
                 possible_ids.append(id)
     return possible_ids
 
-def spam_api(possible_ids):
+def spam_api(possible_ids, verbose):
     """
     Spams the SK API with all possible ID candidates and returns the hits.
     
@@ -85,7 +86,12 @@ def spam_api(possible_ids):
     bind_pw = ''
     base_dn = 'c=EE'
     counter = 1
+
+    if verbose:
+        invalid = []
+
     for id_ in possible_ids:
+
         x = int(id_[7:10])
         search_filter = f'(serialNumber=PNOEE-{id_})'
         conn = ldap.initialize(ldap_server_url)
@@ -112,43 +118,90 @@ def spam_api(possible_ids):
             rprint(line)
             hits.append(result[1][1]["cn"][0])
         except:
+            if verbose:
+                invalid.append(id_)
             pass
         conn.unbind()
         time.sleep(0.1)
         counter += 1
+
+    if verbose:
+        rprint(f'[bold]Invalid IDs tried:[/bold]')
+
+        invalid_str = ""
+        for i in invalid:
+            invalid_str += i + ", "
+
+        rprint(invalid_str[:-2])
+        print("")
+        rprint(f'[bold]Total invalid IDs tried:[/bold] {len(invalid)}')
+        rprint(f'[bold]Total hits:[/bold] {len(hits)}')
+
     return hits
 
-def main():
-    try:
-        dob = Prompt.ask("[white][bold]Enter target date of birth (YYMMDD)[/bold]\n")
-        if len(dob) != 6:
-            rprint('[red1][bold]Invalid DoB, exiting.[/bold]')
-            return
-        print("")
-        gender = Prompt.ask("[bold]Enter target gender (m/f)[/bold]\n")
-        if gender != 'm' and gender != 'f':
-            rprint('[red1][bold]Invalid gender, exiting.[/bold]')
-            return
-        print("")
-        search = Prompt.ask("[bold]Enter search term (leave empty for none)[/bold]\n")
-        print("")
-
-        births = spam_api(generate_ids(gender, dob))
-
-        print("")
-
-        if search != "":
-            matches = list()
-            for i in births:
-                if search.lower() in str(i.decode("utf8").lower()):
-                    matches.append(i)
-            if len(matches) == 0:
-                rprint("[bold]Person matching search term not found[/bold].")
-            if len(matches) != 0:
-                rprint("[bold]Match(es) found:[/bold]")
-                for match in matches:
-                    rprint(f'[bold]{match.decode("utf8").replace(",", ", ")}[/bold]')
+def search(verbose):
+    if verbose:
+        rprint("[bold]Verbose mode enabled.[/bold]")
+    dob = Prompt.ask("[white][bold]Enter target date of birth (YYMMDD)[/bold]\n")
+    if len(dob) != 6:
+        rprint('[red1][bold]Invalid DoB, exiting.[/bold]')
         return
+    print("")
+    gender = Prompt.ask("[bold]Enter target gender (m/f)[/bold]\n")
+    if gender != 'm' and gender != 'f':
+        rprint('[red1][bold]Invalid gender, exiting.[/bold]')
+        return
+    print("")
+    search = Prompt.ask("[bold]Enter search term (leave empty for none)[/bold]\n")
+    print("")
+
+    births = spam_api(generate_ids(gender, dob), verbose)
+
+    print("")
+
+    if search != "":
+        matches = list()
+        for i in births:
+            if search.lower() in str(i.decode("utf8").lower()):
+                matches.append(i)
+        if len(matches) == 0:
+            rprint("[bold]Person matching search term not found[/bold].")
+        if len(matches) != 0:
+            rprint("[bold]Match(es) found:[/bold]")
+            for match in matches:
+                rprint(f'[bold]{match.decode("utf8").replace(",", ", ")}[/bold]')
+    return
+
+def main():
+    VALID_ARGS = ['--verbose', '-v', '--help', '-h']
+
+    args = sys.argv[1:]
+
+    verbose = False
+
+    for arg in args:
+        if arg not in VALID_ARGS:
+            rprint(f'[red1][bold]Invalid argument "{arg}", exiting. Pass -h or --help for help.[/bold]')
+            return
+
+    if "--help" in args or "-h" in args:
+        if len(args) > 1:
+            rprint(f"[red1][bold]Can't pass -h or --help with other args. Pass -h or --help by itself for help.[/bold]")
+            return
+
+    if 'help' in args or '-h' in args:
+        rprint('[bold]idbrute.py[/bold] is a tool for bruteforcing Estonian national identification numbers.')
+        rprint('Usage: [bold]python3 idbrute.py [argument][/bold]')
+        rprint('Arguments:')
+        rprint('[bold]--verbose, -v[/bold]: Enables verbose mode.')
+        rprint('[bold]--help, -h[/bold]: Shows this help message.')
+        return
+
+    if '--verbose' in args or '-v' in args:
+        verbose = True
+
+    try:
+        search(verbose)
     except KeyboardInterrupt:
         print('')
         print('Keyboard interrupt, exiting.')
