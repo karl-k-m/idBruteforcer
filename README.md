@@ -6,7 +6,9 @@ It works by generating all possible ID candidates for a given DoB and Gender com
 
 As per Estonian ID documentation, ID codes and the associated names are **not** considered private information. Thereby, this code does not break any privacy laws.  
 
-More info on ID numbers and how they work: https://et.wikipedia.org/wiki/Isikukood
+More info on ID numbers and how they work: https://et.wikipedia.org/wiki/Isikukood  
+
+External dependencies: **python-ldap**, **rich**.
 
 **NB: I could not get the ldap Python library to work on Windows, but it works on Linux. If you want it to support Windows, you might have to find an alternative ldap library.**
 
